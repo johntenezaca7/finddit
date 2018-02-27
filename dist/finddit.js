@@ -71,9 +71,106 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({4:[function(require,module,exports) {
+})({10:[function(require,module,exports) {
+"use strict";
 
-},{}],8:[function(require,module,exports) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = {
+    search: function search(searchTerm, searchLimit, sortBy) {
+        return fetch("http://www.reddit.com/search.json?q=" + searchTerm + "&sort=" + sortBy + "&limit=" + searchLimit).then(function (res) {
+            return res.json();
+        }).then(function (data) {
+            return data.data.children.map(function (data) {
+                return data.data;
+            });
+        }).catch(function (err) {
+            return console.log(err);
+        });
+    }
+};
+},{}],4:[function(require,module,exports) {
+'use strict';
+
+var _redditAPI = require('./redditAPI');
+
+var _redditAPI2 = _interopRequireDefault(_redditAPI);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var searchForm = document.getElementById('search-form');
+var searchInput = document.getElementById('search-input');
+
+//Form Event Listener
+searchForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    //Get search term
+    var searchTerm = searchInput.value;
+
+    //Get sort
+    var sortBy = document.querySelector('input[name="sortby"]:checked').value;
+
+    // Get Limit
+    var searchLimit = document.getElementById('limit').value;
+
+    //Check Input
+
+    if (searchTerm === '') {
+        //Show message
+        showMessage('Please add a search term!', 'alert-danger');
+    }
+
+    //Clear input
+    searchInput.value = '';
+
+    //Search Reddit
+    _redditAPI2.default.search(searchTerm, searchLimit, sortBy).then(function (results) {
+        var output = '<div class="card-columns">';
+        //Loop through posts
+
+        results.forEach(function (post) {
+            //Check for image;
+            var image = post.preview ? post.preview.images[0].source.url : 'https://marketingland.com/wp-content/ml-loads/2014/07/reddit-combo-1920-800x450.png';
+            output += '\n                <div class="card" >\n                    <img class="card-img-top" src=' + image + ' alt="Card image cap">\n                    <div class="card-body">\n                    <h5 class="card-title">' + truncateText(post.title, 50) + '...</h5>\n                    <p class="card-text">' + truncateText(post.selftext, 100) + '</p>\n                    <a href=' + post.url + ' target="_blank" class="btn btn-primary">Read More</a>\n                    <hr>\n                    <span class="badge badge-secondary"> Subreddit: ' + post.subreddit + ' </span>\n                    <span class="badge badge-dark"> Score: ' + post.score + ' </span>\n                    </div>\n                </div>\n                ';
+        });
+        output += '</div>';
+        document.getElementById('results').innerHTML = output;
+    });
+});
+
+//Show Message
+
+function showMessage(message, className) {
+    //create div
+    var div = document.createElement('div');
+    //Add classes
+    div.className = 'alert ' + className;
+    //Add text
+    div.appendChild(document.createTextNode(message));
+    //Get Parent 
+    var searchContainer = document.getElementById('search-container');
+    //Get Search
+    var search = document.getElementById('search');
+
+    //Insert Message
+    searchContainer.insertBefore(div, search);
+
+    //Timeout alert
+    setTimeout(function () {
+        return document.querySelector('.alert').remove();
+    }, 3000);
+}
+//Truncate Text
+
+function truncateText(text, limit) {
+    var shortend = text.indexOf(' ', limit);
+
+    if (shortend == -1) return text;
+    return text.substring(0, shortend);
+}
+},{"./redditAPI":10}],9:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -196,5 +293,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[8,4])
+},{}]},{},[9,4])
 //# sourceMappingURL=/dist/finddit.map
